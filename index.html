@@ -87,9 +87,15 @@
 
         .days-grid {
             display: flex;
-            flex-wrap: wrap;
             gap: 4px;
             max-width: fit-content;
+            margin: 0 auto;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .day {
@@ -99,6 +105,7 @@
             background: #2a2a2a;
             border: 1px solid #444;
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .day.past {
@@ -254,11 +261,11 @@
             const numRows = 7;
             const numColumns = Math.ceil(totalDays / numRows);
 
-            // Set grid width to fit exactly the number of columns
-            daysGrid.style.width = `${numColumns * 14 + (numColumns - 1) * 4}px`;
-
-            // Create grid cells in column order (vertical fill)
+            // Create columns
             for (let col = 0; col < numColumns; col++) {
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'column';
+
                 for (let row = 0; row < numRows; row++) {
                     const dayNum = col * numRows + row + 1;
 
@@ -273,9 +280,11 @@
                             dayDiv.classList.add('today');
                         }
 
-                        daysGrid.appendChild(dayDiv);
+                        columnDiv.appendChild(dayDiv);
                     }
                 }
+
+                daysGrid.appendChild(columnDiv);
             }
 
             const daysPast = currentDayOfYear - 1;
