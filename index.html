@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year Progress 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f0f0f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .year {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .total-days {
+            font-size: 1.5rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.past {
+            background: #4ade80;
+        }
+
+        .legend-color.today {
+            background: #ef4444;
+        }
+
+        .legend-color.future {
+            background: #2a2a2a;
+            border: 2px solid #444;
+        }
+
+        .grid-container {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            max-width: 1200px;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .days-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: fit-content;
+        }
+
+        .day {
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            transition: all 0.2s ease;
+        }
+
+        .day.past {
+            background: #4ade80;
+            border-color: #22c55e;
+        }
+
+        .day.today {
+            background: #ef4444;
+            border-color: #dc2626;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+
+        .day:hover {
+            transform: scale(1.5);
+            z-index: 10;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .year {
+                font-size: 3rem;
+            }
+
+            .total-days {
+                font-size: 1.2rem;
+            }
+
+            .legend {
+                gap: 15px;
+            }
+
+            .grid-container {
+                padding: 15px;
+            }
+
+            .day {
+                width: 10px;
+                height: 10px;
+            }
+
+            .stats {
+                gap: 30px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="year" id="year">2026</div>
+        <div class="total-days" id="total-days">Total Days: 365</div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color past"></div>
+            <span>Past</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color today"></div>
+            <span>Today</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color future"></div>
+            <span>Future</span>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="days-grid" id="days-grid"></div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-value" id="days-past">0</div>
+            <div class="stat-label">Days Past</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="days-remaining">0</div>
+            <div class="stat-label">Days Remaining</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="progress-percent">0%</div>
+            <div class="stat-label">Progress</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="current-day">-</div>
+            <div class="stat-label">Today</div>
+        </div>
+    </div>
+
+    <script>
+        function getDaysInYear(year) {
+            return ((year % 4 === 0 && year % 100 > 0) || year % 400 === 0) ? 366 : 365;
+        }
+
+        function getDayOfYear(date) {
+            const start = new Date(date.getFullYear(), 0, 0);
+            const diff = date - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+
+        function formatDate(date) {
+            const options = { month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function createDayGrid() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const currentDayOfYear = getDayOfYear(now);
+            const totalDays = getDaysInYear(year);
+
+            document.getElementById('year').textContent = year;
+            document.getElementById('total-days').textContent = `Total Days: ${totalDays}`;
+
+            const daysGrid = document.getElementById('days-grid');
+            daysGrid.innerHTML = '';
+
+            const numRows = 7;
+            const numColumns = Math.ceil(totalDays / numRows);
+
+            // Set grid width to fit exactly the number of columns
+            daysGrid.style.width = `${numColumns * 14 + (numColumns - 1) * 4}px`;
+
+            // Create grid cells in column order (vertical fill)
+            for (let col = 0; col < numColumns; col++) {
+                for (let row = 0; row < numRows; row++) {
+                    const dayNum = col * numRows + row + 1;
+
+                    if (dayNum <= totalDays) {
+                        const dayDiv = document.createElement('div');
+                        dayDiv.className = 'day';
+                        dayDiv.title = `Day ${dayNum}`;
+
+                        if (dayNum < currentDayOfYear) {
+                            dayDiv.classList.add('past');
+                        } else if (dayNum === currentDayOfYear) {
+                            dayDiv.classList.add('today');
+                        }
+
+                        daysGrid.appendChild(dayDiv);
+                    }
+                }
+            }
+
+            const daysPast = currentDayOfYear - 1;
+            const daysRemaining = totalDays - daysPast;
+            const progressPercent = ((daysPast / totalDays) * 100).toFixed(1);
+
+            document.getElementById('days-past').textContent = daysPast;
+            document.getElementById('days-remaining').textContent = daysRemaining;
+            document.getElementById('progress-percent').textContent = progressPercent + '%';
+            document.getElementById('current-day').textContent = formatDate(now);
+        }
+
+        createDayGrid();
+    </script>
+</body>
+</html>
